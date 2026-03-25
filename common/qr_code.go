@@ -24,3 +24,12 @@ type GetQRStatusResponse struct {
 	BaseURL     string `json:"baseurl,omitempty"`
 	ILinkUserID string `json:"ilink_user_id,omitempty"`
 }
+
+// AuthResult represents the result of a successful qr authentication
+type AuthResult struct {
+	AccountID   string `json:"account_id"`
+	BotToken    string `json:"bot_token,omitempty"`
+	ILinkBotID  string `json:"ilink_bot_id,omitempty"`
+	BaseURL     string `json:"baseurl,omitempty"`
+	ILinkUserID string `json:"ilink_user_id,omitempty"`
+}

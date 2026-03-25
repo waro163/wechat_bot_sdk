@@ -85,7 +85,18 @@ func New(cfg *Config) (*Client, error) {
 }
 
 // Authenticate performs QR code authentication
-func (c *Client) Authenticate(ctx context.Context, qrCodeDisplay func(string) error) (*auth.AuthResult, error) {
+func (c *Client) Authenticate(ctx context.Context, qrCodeDisplay func(string) error) (*common.AuthResult, error) {
+	account, err := c.config.Storage.LoadAccount(ctx, c.config.AccountID)
+	if err == nil {
+		c.apiClient.SetBotToken(account.BotToken)
+		return &common.AuthResult{
+			AccountID:   account.AccountID,
+			BotToken:    account.BotToken,
+			BaseURL:     account.BaseURL,
+			ILinkBotID:  account.ILinkBotID,
+			ILinkUserID: account.ILinkUserID,
+		}, nil
+	}
 	authenticator := auth.NewQRAuthenticator(
 		c.apiClient,
 		c.config.Logger,
@@ -96,16 +107,13 @@ func (c *Client) Authenticate(ctx context.Context, qrCodeDisplay func(string) er
 		return nil, err
 	}
 
-	c.apiClient.SetBotToken(result.Token)
+	c.apiClient.SetBotToken(result.BotToken)
 
 	// Save account to storage
-	account := &common.Account{
-		ID:        result.AccountID,
-		Token:     result.Token,
-		BaseURL:   result.BaseURL,
-		UserID:    result.UserID,
-		CreatedAt: time.Now().Unix(),
-		UpdatedAt: time.Now().Unix(),
+	account = &common.Account{
+		AuthResult: *result,
+		CreatedAt:  time.Now().Unix(),
+		UpdatedAt:  time.Now().Unix(),
 	}
 
 	if err := c.config.Storage.SaveAccount(ctx, account); err != nil {
@@ -113,12 +121,12 @@ func (c *Client) Authenticate(ctx context.Context, qrCodeDisplay func(string) er
 	}
 
 	// Convert to public type
-	return &auth.AuthResult{
-		AccountID: result.AccountID,
-		Token:     result.Token,
-		BaseURL:   result.BaseURL,
-		BotID:     result.BotID,
-		UserID:    result.UserID,
+	return &common.AuthResult{
+		AccountID:   result.AccountID,
+		BotToken:    result.BotToken,
+		BaseURL:     result.BaseURL,
+		ILinkBotID:  result.ILinkBotID,
+		ILinkUserID: result.ILinkUserID,
 	}, nil
 }
 

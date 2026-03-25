@@ -57,7 +57,7 @@ func (a *QRAuthenticator) loginAndDisplayQRCode(ctx context.Context, accountID s
 }
 
 // waitForLogin waits for QR code to be scanned and confirmed
-func (a *QRAuthenticator) waitForLogin(ctx context.Context, qrcode string, accountID string, qrCodeDisplay func(string) error) (*AuthResult, error) {
+func (a *QRAuthenticator) waitForLogin(ctx context.Context, qrcode string, accountID string, qrCodeDisplay func(string) error) (*common.AuthResult, error) {
 	a.logger.Info("Waiting for QR code scan", common.Field{Key: "accountID", Value: accountID})
 
 	refreshCount := 0
@@ -89,12 +89,12 @@ func (a *QRAuthenticator) waitForLogin(ctx context.Context, qrcode string, accou
 				return nil, fmt.Errorf("bot_token is empty in confirmed response")
 			}
 
-			return &AuthResult{
-				AccountID: accountID,
-				Token:     statusResp.BotToken,
-				BaseURL:   statusResp.BaseURL,
-				BotID:     statusResp.ILinkBotID,
-				UserID:    statusResp.ILinkUserID,
+			return &common.AuthResult{
+				AccountID:   accountID,
+				BotToken:    statusResp.BotToken,
+				BaseURL:     statusResp.BaseURL,
+				ILinkBotID:  statusResp.ILinkBotID,
+				ILinkUserID: statusResp.ILinkUserID,
 			}, nil
 
 		case common.QRStatusExpired:
@@ -128,7 +128,7 @@ func (a *QRAuthenticator) waitForLogin(ctx context.Context, qrcode string, accou
 }
 
 // Authenticate performs complete QR code authentication flow
-func (a *QRAuthenticator) Authenticate(ctx context.Context, accountID string, qrCodeDisplay func(string) error) (*AuthResult, error) {
+func (a *QRAuthenticator) Authenticate(ctx context.Context, accountID string, qrCodeDisplay func(string) error) (*common.AuthResult, error) {
 	qrCodeResp, err := a.loginAndDisplayQRCode(ctx, accountID, qrCodeDisplay)
 	if err != nil {
 		return nil, err

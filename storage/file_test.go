@@ -24,10 +24,12 @@ func TestFileStorage_SaveAndLoadAccount(t *testing.T) {
 	now := time.Now().Unix()
 
 	account := &common.Account{
-		ID:        "test-account-001",
-		Token:     "test-token-123",
-		BaseURL:   "https://test.example.com",
-		UserID:    "user-123",
+		AuthResult: common.AuthResult{
+			AccountID:   "test-account-001",
+			BotToken:    "test-token-123",
+			BaseURL:     "https://test.example.com",
+			ILinkUserID: "user-123",
+		},
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
@@ -44,17 +46,17 @@ func TestFileStorage_SaveAndLoadAccount(t *testing.T) {
 	}
 
 	// Verify all fields
-	if loaded.ID != account.ID {
-		t.Errorf("ID mismatch: got %q, want %q", loaded.ID, account.ID)
+	if loaded.AccountID != account.AccountID {
+		t.Errorf("AccountID mismatch: got %q, want %q", loaded.AccountID, account.AccountID)
 	}
-	if loaded.Token != account.Token {
-		t.Errorf("Token mismatch: got %q, want %q", loaded.Token, account.Token)
+	if loaded.BotToken != account.BotToken {
+		t.Errorf("BotToken mismatch: got %q, want %q", loaded.BotToken, account.BotToken)
 	}
 	if loaded.BaseURL != account.BaseURL {
 		t.Errorf("BaseURL mismatch: got %q, want %q", loaded.BaseURL, account.BaseURL)
 	}
-	if loaded.UserID != account.UserID {
-		t.Errorf("UserID mismatch: got %q, want %q", loaded.UserID, account.UserID)
+	if loaded.ILinkUserID != account.ILinkUserID {
+		t.Errorf("ILinkUserID mismatch: got %q, want %q", loaded.ILinkUserID, account.ILinkUserID)
 	}
 	if loaded.CreatedAt != account.CreatedAt {
 		t.Errorf("CreatedAt mismatch: got %d, want %d", loaded.CreatedAt, account.CreatedAt)
@@ -77,10 +79,12 @@ func TestFileStorage_UpdateAccount(t *testing.T) {
 
 	// Create initial account
 	account := &common.Account{
-		ID:        "test-account-002",
-		Token:     "old-token",
-		BaseURL:   "https://old.example.com",
-		UserID:    "user-456",
+		AuthResult: common.AuthResult{
+			AccountID:   "test-account-002",
+			BotToken:    "old-token",
+			BaseURL:     "https://old.example.com",
+			ILinkUserID: "user-456",
+		},
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
@@ -90,7 +94,7 @@ func TestFileStorage_UpdateAccount(t *testing.T) {
 	}
 
 	// Update account
-	account.Token = "new-token"
+	account.BotToken = "new-token"
 	account.BaseURL = "https://new.example.com"
 	account.UpdatedAt = now + 100
 
@@ -104,8 +108,8 @@ func TestFileStorage_UpdateAccount(t *testing.T) {
 		t.Fatalf("LoadAccount failed: %v", err)
 	}
 
-	if loaded.Token != "new-token" {
-		t.Errorf("Token not updated: got %q, want %q", loaded.Token, "new-token")
+	if loaded.BotToken != "new-token" {
+		t.Errorf("BotToken not updated: got %q, want %q", loaded.BotToken, "new-token")
 	}
 	if loaded.BaseURL != "https://new.example.com" {
 		t.Errorf("BaseURL not updated: got %q, want %q", loaded.BaseURL, "https://new.example.com")
@@ -147,10 +151,12 @@ func TestFileStorage_DeleteAccount(t *testing.T) {
 
 	// Create account
 	account := &common.Account{
-		ID:        "test-account-003",
-		Token:     "token-to-delete",
-		BaseURL:   "https://delete.example.com",
-		UserID:    "user-789",
+		AuthResult: common.AuthResult{
+			AccountID:   "test-account-003",
+			BotToken:    "token-to-delete",
+			BaseURL:     "https://delete.example.com",
+			ILinkUserID: "user-789",
+		},
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
@@ -190,14 +196,26 @@ func TestFileStorage_ListAccounts(t *testing.T) {
 
 	// Create multiple accounts
 	accounts := []*common.Account{
-		{ID: "account-001", Token: "token-1", BaseURL: "https://url1.com", UserID: "user-1", CreatedAt: now, UpdatedAt: now},
-		{ID: "account-002", Token: "token-2", BaseURL: "https://url2.com", UserID: "user-2", CreatedAt: now, UpdatedAt: now},
-		{ID: "account-003", Token: "token-3", BaseURL: "https://url3.com", UserID: "user-3", CreatedAt: now, UpdatedAt: now},
+		{
+			AuthResult: common.AuthResult{AccountID: "account-001", BotToken: "token-1", BaseURL: "https://url1.com", ILinkUserID: "user-1"},
+			CreatedAt:  now,
+			UpdatedAt:  now,
+		},
+		{
+			AuthResult: common.AuthResult{AccountID: "account-002", BotToken: "token-2", BaseURL: "https://url2.com", ILinkUserID: "user-2"},
+			CreatedAt:  now,
+			UpdatedAt:  now,
+		},
+		{
+			AuthResult: common.AuthResult{AccountID: "account-003", BotToken: "token-3", BaseURL: "https://url3.com", ILinkUserID: "user-3"},
+			CreatedAt:  now,
+			UpdatedAt:  now,
+		},
 	}
 
 	for _, acc := range accounts {
 		if err := storage.SaveAccount(ctx, acc); err != nil {
-			t.Fatalf("SaveAccount(%s) failed: %v", acc.ID, err)
+			t.Fatalf("SaveAccount(%s) failed: %v", acc.AccountID, err)
 		}
 	}
 
@@ -215,12 +233,12 @@ func TestFileStorage_ListAccounts(t *testing.T) {
 	// Verify all accounts are present
 	found := make(map[string]bool)
 	for _, acc := range list {
-		found[acc.ID] = true
+		found[acc.AccountID] = true
 	}
 
 	for _, expected := range accounts {
-		if !found[expected.ID] {
-			t.Errorf("Account %s not found in list", expected.ID)
+		if !found[expected.AccountID] {
+			t.Errorf("Account %s not found in list", expected.AccountID)
 		}
 	}
 }
@@ -349,10 +367,13 @@ func TestFileStorage_ConcurrentAccess(t *testing.T) {
 
 	// Create initial account
 	account := &common.Account{
-		ID:        "concurrent-test",
-		Token:     "token",
-		BaseURL:   "https://example.com",
-		UserID:    "user",
+		AuthResult: common.AuthResult{
+			AccountID:   "concurrent-test",
+			BotToken:    "bot-token",
+			BaseURL:     "https://example.com",
+			ILinkBotID:  "bot-id",
+			ILinkUserID: "user-id",
+		},
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
@@ -393,10 +414,12 @@ func TestFileStorage_DirectoryCreation(t *testing.T) {
 	now := time.Now().Unix()
 
 	account := &common.Account{
-		ID:        "dir-test",
-		Token:     "token",
-		BaseURL:   "https://example.com",
-		UserID:    "user",
+		AuthResult: common.AuthResult{
+			AccountID:   "dir-test",
+			BotToken:    "token",
+			BaseURL:     "https://example.com",
+			ILinkUserID: "user",
+		},
 		CreatedAt: now,
 		UpdatedAt: now,
 	}

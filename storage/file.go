@@ -94,7 +94,7 @@ func (s *fileStorage) LoadSyncBuffer(ctx context.Context, accountID string) ([]b
 
 // SaveAccount persists account credentials
 func (s *fileStorage) SaveAccount(ctx context.Context, account *common.Account) error {
-	filename := filepath.Join(s.baseDir, "accounts", fmt.Sprintf("%s.json", account.ID))
+	filename := filepath.Join(s.baseDir, "accounts", fmt.Sprintf("%s.json", account.AccountID))
 
 	// Write to temp file first, then rename (atomic operation)
 	tempFile := filename + ".tmp"
@@ -114,7 +114,7 @@ func (s *fileStorage) SaveAccount(ctx context.Context, account *common.Account) 
 	}
 
 	// Update accounts index
-	if err := s.updateAccountsIndex(ctx, account.ID, true); err != nil {
+	if err := s.updateAccountsIndex(ctx, account.AccountID, true); err != nil {
 		return fmt.Errorf("failed to update accounts index: %w", err)
 	}
 
