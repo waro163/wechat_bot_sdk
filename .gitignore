@@ -1,2 +1,5 @@
+.wechat-bot
 docs/
 vendor/
+package*
+tencent-weixin-openclaw-weixin-*
