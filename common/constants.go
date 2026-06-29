@@ -81,6 +81,9 @@ const (
 	// Auth type value
 	AuthTypeILinkBotToken = "ilink_bot_token"
 
+	ILinkAppId            = "bot"
+	ILinkAppClientVersion = "0x00020404"
+
 	// Content types
 	ContentTypeJSON        = "application/json"
 	ContentTypeOctetStream = "application/octet-stream"

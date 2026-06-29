@@ -94,10 +94,12 @@ func (c *Client) buildHeaders(bodyBytes []byte) (http.Header, error) {
 	}
 
 	headers := http.Header{
-		"Content-Type":      []string{common.ContentTypeJSON},
-		"AuthorizationType": []string{common.AuthTypeILinkBotToken},
-		"Content-Length":    []string{fmt.Sprintf("%d", len(bodyBytes))},
-		"X-WECHAT-UIN":      []string{uin},
+		"Content-Type":            []string{common.ContentTypeJSON},
+		"AuthorizationType":       []string{common.AuthTypeILinkBotToken},
+		"Content-Length":          []string{fmt.Sprintf("%d", len(bodyBytes))},
+		"X-WECHAT-UIN":            []string{uin},
+		"iLink-App-Id":            []string{common.ILinkAppId},
+		"iLink-App-ClientVersion": []string{common.ILinkAppClientVersion},
 	}
 
 	if c.botToken != "" {
@@ -230,7 +232,6 @@ func (c *Client) GetQRStatus(ctx context.Context, qrCode string, timeout time.Du
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
-	req.Header.Set("iLink-App-ClientVersion", "1")
 
 	c.logger.Debug("Polling QR status", common.Field{Key: "qrcode", Value: qrCode})
 	// Execute request
