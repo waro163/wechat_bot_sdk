@@ -40,6 +40,7 @@ type GetUploadUrlResponse struct {
 	Ret              int    `json:"ret"`
 	ErrCode          int    `json:"errcode,omitempty"`
 	ErrMsg           string `json:"errmsg,omitempty"`
+	UploadFullURL    string `json:"upload_full_url,omitempty"`
 	UploadParam      string `json:"upload_param,omitempty"`
 	ThumbUploadParam string `json:"thumb_upload_param,omitempty"`
 }

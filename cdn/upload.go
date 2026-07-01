@@ -37,7 +37,7 @@ func NewUploader(cdnBaseURL string, httpClient api.IUploadClient, logger common.
 }
 
 // uploadBufferToCDN uploads encrypted buffer to CDN
-func (up *Uploader) uploadBufferToCDN(ctx context.Context, plaintext []byte, uploadParam, fileKey string, aesKey []byte) (string, error) {
+func (up *Uploader) uploadBufferToCDN(ctx context.Context, plaintext, aesKey []byte, fileKey, uploadParam, uploadFullURL string) (string, error) {
 	// Encrypt data
 	ciphertext, err := crypto.EncryptAESECB(plaintext, aesKey)
 	if err != nil {
@@ -45,17 +45,24 @@ func (up *Uploader) uploadBufferToCDN(ctx context.Context, plaintext []byte, upl
 	}
 
 	// Build CDN URL
-	u := *up.baseUrl
-	u.Path = path.Join(u.Path, "upload")
-	q := u.Query()
-	q.Set("encrypted_query_param", uploadParam)
-	q.Set("filekey", fileKey)
-	u.RawQuery = q.Encode()
-	uploadURL := u.String()
+	var uploadURL string
+	if uploadFullURL != "" {
+		uploadURL = uploadFullURL
+	} else {
+		u := *up.baseUrl
+		u.Path = path.Join(u.Path, "upload")
+		q := u.Query()
+		q.Set("encrypted_query_param", uploadParam)
+		q.Set("filekey", fileKey)
+		u.RawQuery = q.Encode()
+		uploadURL = u.String()
+	}
 
 	up.logger.Debug("Uploading to CDN",
 		common.Field{Key: "ciphertextSize", Value: len(ciphertext)},
 		common.Field{Key: "fileKey", Value: fileKey},
+		common.Field{Key: "uploadParam", Value: uploadParam},
+		common.Field{Key: "uploadURL", Value: uploadURL},
 	)
 
 	var downloadParam string
@@ -173,12 +180,8 @@ func (up *Uploader) UploadFile(ctx context.Context, fileData []byte, toUserID st
 		return nil, fmt.Errorf("failed to get upload URL: %w", err)
 	}
 
-	if uploadUrlResp.UploadParam == "" {
-		return nil, fmt.Errorf("getUploadUrl returned no upload_param")
-	}
-
 	// Upload to CDN
-	downloadParam, err := up.uploadBufferToCDN(ctx, fileData, uploadUrlResp.UploadParam, fileKey, aesKey)
+	downloadParam, err := up.uploadBufferToCDN(ctx, fileData, aesKey, fileKey, uploadUrlResp.UploadParam, uploadUrlResp.UploadFullURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to upload to CDN: %w", err)
 	}
