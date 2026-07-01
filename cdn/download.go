@@ -91,6 +91,16 @@ func (d *Downloader) DownloadPlain(ctx context.Context, encryptedQueryParam stri
 	return data, nil
 }
 
+func (d *Downloader) Download(ctx context.Context, media *common.CDNMedia) ([]byte, error) {
+	if media == nil {
+		return nil, fmt.Errorf("media is nil")
+	}
+	if media.FullURL != nil {
+		return d.fetchCDNBytes(ctx, *media.FullURL)
+	}
+	return d.DownloadAndDecrypt(ctx, *media.EncryptQueryParam, *media.AESKey)
+}
+
 // fetchCDNBytes downloads raw bytes from CDN
 func (d *Downloader) fetchCDNBytes(ctx context.Context, url string) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)

@@ -46,6 +46,7 @@ type RefMessage struct {
 
 // CDNMedia represents a CDN media reference with encryption info
 type CDNMedia struct {
+	FullURL           *string      `json:"full_url,omitempty"`
 	EncryptQueryParam *string      `json:"encrypt_query_param,omitempty"`
 	AESKey            *string      `json:"aes_key,omitempty"`
 	EncryptType       *EncryptType `json:"encrypt_type,omitempty"`
