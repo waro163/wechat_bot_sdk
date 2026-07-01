@@ -23,7 +23,7 @@ type HTTPClient interface {
 
 type IQrClient interface {
 	GetQRCode(ctx context.Context, botType string) (*common.GetQRCodeResponse, error)
-	GetQRStatus(ctx context.Context, qrCode string, timeout time.Duration) (*common.GetQRStatusResponse, error)
+	GetQRStatus(ctx context.Context, qrCode, verifyCode string, timeout time.Duration) (*common.GetQRStatusResponse, error)
 }
 
 type IUploadClient interface {
@@ -214,12 +214,15 @@ func (c *Client) GetQRCode(ctx context.Context, botType string) (*common.GetQRCo
 }
 
 // GetQRStatus polls the QR code status
-func (c *Client) GetQRStatus(ctx context.Context, qrCode string, timeout time.Duration) (*common.GetQRStatusResponse, error) {
+func (c *Client) GetQRStatus(ctx context.Context, qrCode, verifyCode string, timeout time.Duration) (*common.GetQRStatusResponse, error) {
 	// Build URL with query parameter
 	u := *c.baseUrl
 	u.Path = common.EndpointGetQRStatus
 	v := url.Values{}
 	v.Set("qrcode", qrCode)
+	if verifyCode != "" {
+		v.Set("verify_code", verifyCode)
+	}
 	u.RawQuery = v.Encode()
 	url := u.String()
 
@@ -228,7 +231,7 @@ func (c *Client) GetQRStatus(ctx context.Context, qrCode string, timeout time.Du
 	defer cancel()
 
 	// Create request
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

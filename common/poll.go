@@ -3,6 +3,7 @@ package common
 // BaseInfo represents common request metadata
 type BaseInfo struct {
 	ChannelVersion string `json:"channel_version,omitempty"`
+	BotAgent       string `json:"bot_agent,omitempty"`
 }
 
 // GetUpdatesRequest represents the getUpdates API request

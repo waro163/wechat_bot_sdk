@@ -18,11 +18,12 @@ type GetQRStatusRequest struct {
 
 // GetQRStatusResponse represents the get_qrcode_status API response
 type GetQRStatusResponse struct {
-	Status      string `json:"status,omitempty"` // wait, scaned, confirmed, expired
-	BotToken    string `json:"bot_token,omitempty"`
-	ILinkBotID  string `json:"ilink_bot_id,omitempty"`
-	BaseURL     string `json:"baseurl,omitempty"`
-	ILinkUserID string `json:"ilink_user_id,omitempty"`
+	Status       string `json:"status,omitempty"` // wait, scaned, confirmed, expired
+	BotToken     string `json:"bot_token,omitempty"`
+	ILinkBotID   string `json:"ilink_bot_id,omitempty"`
+	BaseURL      string `json:"baseurl,omitempty"`
+	ILinkUserID  string `json:"ilink_user_id,omitempty"`
+	RedirectHost string `json:"redirect_host,omitempty"`
 }
 
 // AuthResult represents the result of a successful qr authentication

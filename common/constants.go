@@ -121,10 +121,14 @@ const (
 type QRStatus string
 
 const (
-	QRStatusWait      QRStatus = "wait"
-	QRStatusScanned   QRStatus = "scaned" // Note: typo from API
-	QRStatusConfirmed QRStatus = "confirmed"
-	QRStatusExpired   QRStatus = "expired"
+	QRStatusWait              QRStatus = "wait"
+	QRStatusScanned           QRStatus = "scaned" // Note: typo from API
+	QRStatusConfirmed         QRStatus = "confirmed"
+	QRStatusExpired           QRStatus = "expired"
+	QRStatusNeedVerifyCode    QRStatus = "need_verifycode"
+	QRStatusVerifyCodeBlocked QRStatus = "verify_code_blocked"
+	QRStatusBindedRedirect    QRStatus = "binded_redirect"
+	QRStatusScanedButRedirect QRStatus = "scaned_but_redirect"
 )
 
 const (
