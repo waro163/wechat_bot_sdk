@@ -64,7 +64,7 @@ func (a *QRAuthenticator) waitForLogin(ctx context.Context, qrcode string, accou
 
 	for {
 		// Poll QR status
-		statusResp, err := a.apiClient.GetQRStatus(ctx, qrcode, common.QRLongPollTimeout)
+		statusResp, err := a.apiClient.GetQRStatus(ctx, qrcode, "", common.QRLongPollTimeout)
 		if err != nil {
 			a.logger.Error("GetQRStatus error", common.Field{Key: "error", Value: err.Error()})
 			continue
@@ -120,7 +120,18 @@ func (a *QRAuthenticator) waitForLogin(ctx context.Context, qrcode string, accou
 			)
 
 			continue
-
+		case common.QRStatusNeedVerifyCode:
+			a.logger.Info("QR code needs verify code", common.Field{Key: "refreshCount", Value: refreshCount})
+			continue
+		case common.QRStatusVerifyCodeBlocked:
+			a.logger.Info("QR code verify code blocked", common.Field{Key: "refreshCount", Value: refreshCount})
+			continue
+		case common.QRStatusBindedRedirect:
+			a.logger.Info("QR code binded redirect", common.Field{Key: "refreshCount", Value: refreshCount})
+			continue
+		case common.QRStatusScanedButRedirect:
+			a.logger.Info("QR code scanned but redirect", common.Field{Key: "refreshCount", Value: refreshCount})
+			continue
 		default:
 			return nil, fmt.Errorf("unknown QR status: %s", statusResp.Status)
 		}
