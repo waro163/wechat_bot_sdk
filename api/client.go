@@ -24,6 +24,7 @@ type HTTPClient interface {
 type IQrClient interface {
 	GetQRCode(ctx context.Context, botType string) (*common.GetQRCodeResponse, error)
 	GetQRStatus(ctx context.Context, qrCode, verifyCode string, timeout time.Duration) (*common.GetQRStatusResponse, error)
+	SetQRStatusHost(host string) error
 }
 
 type IUploadClient interface {
@@ -45,6 +46,7 @@ type IClient interface {
 	IMessageClient
 	IMonitorClient
 	SetBotToken(string)
+	SetBaseURL(string) error
 }
 
 type Client struct {
@@ -264,6 +266,31 @@ func (c *Client) GetQRStatus(ctx context.Context, qrCode, verifyCode string, tim
 	}
 
 	return &statusResp, nil
+}
+
+func (c *Client) SetQRStatusHost(host string) error {
+	if err := c.setBaseURL(host); err != nil {
+		return err
+	}
+	c.logger.Info("Set QR status host success", common.Field{Key: "host", Value: host})
+	return nil
+}
+
+func (c *Client) SetBaseURL(host string) error {
+	if err := c.setBaseURL(host); err != nil {
+		return err
+	}
+	c.logger.Info("Set Base URL success", common.Field{Key: "host", Value: host})
+	return nil
+}
+
+func (c *Client) setBaseURL(host string) error {
+	baseUrl, err := url.Parse(host)
+	if err != nil {
+		return fmt.Errorf("failed to parse host: %s, err : %w", host, err)
+	}
+	c.baseUrl = baseUrl
+	return nil
 }
 
 // GetUpdates performs a long-poll getUpdates request

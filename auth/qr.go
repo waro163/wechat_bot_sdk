@@ -130,7 +130,16 @@ func (a *QRAuthenticator) waitForLogin(ctx context.Context, qrcode string, accou
 			a.logger.Info("QR code binded redirect", common.Field{Key: "refreshCount", Value: refreshCount})
 			continue
 		case common.QRStatusScanedButRedirect:
-			a.logger.Info("QR code scanned but redirect", common.Field{Key: "refreshCount", Value: refreshCount})
+			a.logger.Debug("QR code scanned but redirect",
+				common.Field{Key: "refreshCount", Value: refreshCount},
+				common.Field{Key: "redirectHost", Value: statusResp.RedirectHost},
+			)
+			if err := a.apiClient.SetQRStatusHost(statusResp.RedirectHost); err != nil {
+				a.logger.Warn("SetQRStatusHost error",
+					common.Field{Key: "error", Value: err.Error()},
+					common.Field{Key: "redirectHost", Value: statusResp.RedirectHost},
+				)
+			}
 			continue
 		default:
 			return nil, fmt.Errorf("unknown QR status: %s", statusResp.Status)

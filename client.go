@@ -89,6 +89,7 @@ func (c *Client) Authenticate(ctx context.Context, qrCodeDisplay func(string) er
 	account, err := c.config.Storage.LoadAccount(ctx, c.config.AccountID)
 	if err == nil {
 		c.apiClient.SetBotToken(account.BotToken)
+		c.apiClient.SetBaseURL(account.BaseURL)
 		return &common.AuthResult{
 			AccountID:   account.AccountID,
 			BotToken:    account.BotToken,
@@ -108,6 +109,7 @@ func (c *Client) Authenticate(ctx context.Context, qrCodeDisplay func(string) er
 	}
 
 	c.apiClient.SetBotToken(result.BotToken)
+	c.apiClient.SetBaseURL(result.BaseURL)
 
 	// Save account to storage
 	account = &common.Account{
