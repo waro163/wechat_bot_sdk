@@ -36,21 +36,13 @@ func NewDownloader(cdnBaseURL string, httpClient api.HTTPClient, logger common.L
 }
 
 // DownloadAndDecrypt downloads and decrypts a media file from CDN
-func (d *Downloader) DownloadAndDecrypt(ctx context.Context, encryptedQueryParam, aesKeyBase64 string) ([]byte, error) {
+func (d *Downloader) downloadAndDecrypt(ctx context.Context, downloadURL, aesKeyBase64 string) ([]byte, error) {
+	d.logger.Debug("Downloading from CDN", common.Field{Key: "url", Value: downloadURL})
 	// Parse AES key
 	aesKey, err := parseAESKey(aesKeyBase64)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse AES key: %w", err)
 	}
-
-	// Build download URL
-	u := *d.baseUrl
-	u.Path = path.Join(u.Path, "download")
-	q := u.Query()
-	q.Set("encrypted_query_param", encryptedQueryParam)
-	u.RawQuery = q.Encode()
-	downloadURL := u.String()
-	d.logger.Debug("Downloading from CDN", common.Field{Key: "url", Value: downloadURL})
 
 	// Download encrypted data
 	encrypted, err := d.fetchCDNBytes(ctx, downloadURL)
@@ -58,27 +50,17 @@ func (d *Downloader) DownloadAndDecrypt(ctx context.Context, encryptedQueryParam
 		return nil, fmt.Errorf("failed to download: %w", err)
 	}
 
-	d.logger.Debug("Downloaded encrypted data", common.Field{Key: "size", Value: len(encrypted)})
-
 	// Decrypt
 	plaintext, err := crypto.DecryptAESECB(encrypted, aesKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decrypt: %w", err)
 	}
-
-	d.logger.Debug("Decrypted data", common.Field{Key: "size", Value: len(plaintext)})
 	return plaintext, nil
 }
 
 // DownloadPlain downloads a plain (unencrypted) file from CDN
 func (d *Downloader) DownloadPlain(ctx context.Context, encryptedQueryParam string) ([]byte, error) {
-	// Build download URL
-	u := *d.baseUrl
-	u.Path = path.Join(u.Path, "download")
-	q := u.Query()
-	q.Set("encrypted_query_param", encryptedQueryParam)
-	u.RawQuery = q.Encode()
-	downloadURL := u.String()
+	downloadURL := buildDownloadURL(d.baseUrl, encryptedQueryParam)
 
 	d.logger.Debug("Downloading plain from CDN", common.Field{Key: "url", Value: downloadURL})
 
@@ -95,10 +77,13 @@ func (d *Downloader) Download(ctx context.Context, media *common.CDNMedia) ([]by
 	if media == nil {
 		return nil, fmt.Errorf("media is nil")
 	}
+	var downloadURL string
 	if media.FullURL != nil {
-		return d.fetchCDNBytes(ctx, *media.FullURL)
+		downloadURL = *media.FullURL
+	} else {
+		downloadURL = buildDownloadURL(d.baseUrl, *media.EncryptQueryParam)
 	}
-	return d.DownloadAndDecrypt(ctx, *media.EncryptQueryParam, *media.AESKey)
+	return d.downloadAndDecrypt(ctx, downloadURL, *media.AESKey)
 }
 
 // fetchCDNBytes downloads raw bytes from CDN
@@ -158,4 +143,13 @@ func parseAESKey(aesKeyBase64 string) ([]byte, error) {
 	}
 
 	return nil, fmt.Errorf("aes_key must decode to 16 raw bytes or 32-char hex string, got %d bytes", len(decoded))
+}
+
+func buildDownloadURL(baseUrl *url.URL, encryptedQueryParam string) string {
+	u := *baseUrl
+	u.Path = path.Join(u.Path, "download")
+	q := u.Query()
+	q.Set("encrypted_query_param", encryptedQueryParam)
+	u.RawQuery = q.Encode()
+	return u.String()
 }

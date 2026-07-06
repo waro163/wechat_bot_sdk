@@ -212,8 +212,8 @@ func (c *Client) SendVideoMessage(ctx context.Context, toUserID string, video []
 }
 
 // DownloadMedia downloads and decrypts media from a message
-func (c *Client) DownloadMedia(ctx context.Context, encryptedQueryParam, aesKey string) ([]byte, error) {
-	return c.downloader.DownloadAndDecrypt(ctx, encryptedQueryParam, aesKey)
+func (c *Client) DownloadMedia(ctx context.Context, media *common.CDNMedia) ([]byte, error) {
+	return c.downloader.Download(ctx, media)
 }
 
 // StartMonitor begins receiving messages
