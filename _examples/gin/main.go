@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	wechatbotsdk "github.com/waro163/wechat-bot-sdk"
 	"github.com/waro163/wechat-bot-sdk/common"
+	"github.com/waro163/wechat-bot-sdk/media"
 )
 
 func main() {
@@ -124,40 +125,25 @@ func main() {
 				log.Printf("Received voice message\n")
 				spew.Dump(msg.VoiceItem)
 				log.Printf("voice content: %s\n", *msg.VoiceItem.Text)
-				media := msg.VoiceItem.Media
-				mediaData, err := client.DownloadMedia(ctx, media)
+				cdnMedia := msg.VoiceItem.Media
+				silkData, err := client.DownloadMedia(ctx, cdnMedia)
 				if err != nil {
 					log.Printf("Failed to download media: %v", err)
 					continue
 				}
+				data, err := media.SilkToWav(silkData, media.DefaultSilkSampleRate)
+				if err != nil {
+					log.Printf("Failed to transcode voice to wav: %v", err)
+					continue
+				}
 				voicePath := "./downloaded_voice.wav"
-				f, err := os.Create(voicePath)
-				if err != nil {
-					log.Printf("Failed to create file: %v", err)
-					continue
-				}
-				defer f.Close()
-				if _, err := f.Write(mediaData); err != nil {
-					log.Printf("Failed to write media data to file: %v", err)
-					continue
-				}
-				data, err := os.ReadFile(voicePath)
-				if err != nil {
-					log.Printf("Failed to read voice file: path:%s, error:%v", voicePath, err)
+				if err := os.WriteFile(voicePath, data, 0644); err != nil {
+					log.Printf("Failed to write voice file: path:%s, error:%v", voicePath, err)
 					continue
 				}
 				if err := client.SendFileMessage(ctx, input.FromUserID, "downloaded_voice.wav", data); err != nil {
 					log.Printf("Failed to send voice message: path: %s, error: %v", voicePath, err)
 				}
-				// voicePath := "/Users/wangron/Downloads/1773132789629380.wav"
-				// data, err := os.ReadFile(voicePath)
-				// if err != nil {
-				// 	log.Printf("Failed to read voice file: path:%s, error:%v", voicePath, err)
-				// 	continue
-				// }
-				// if err := client.SendFileMessage(ctx, input.FromUserID, "1773132789629380.wav", data); err != nil {
-				// 	log.Printf("Failed to send voice message: path: %s, error: %v", voicePath, err)
-				// }
 			case common.MessageItemTypeFile:
 				log.Printf("Received file message\n")
 				spew.Dump(msg.FileItem)
@@ -187,14 +173,6 @@ func main() {
 				if err := client.SendFileMessage(ctx, input.FromUserID, *msg.FileItem.FileName, data); err != nil {
 					log.Printf("Failed to send file message: path: %s, error: %v", filePath, err)
 				}
-				// filePath := "/Users/wangron/Downloads/invoice.pdf"
-				// data, err := os.ReadFile(filePath)
-				// if err != nil {
-				// 	log.Printf("Failed to read file: path:%s, error:%v", filePath, err)
-				// }
-				// if err := client.SendFileMessage(ctx, input.FromUserID, "invoice.pdf", data); err != nil {
-				// 	log.Printf("Failed to send file message: path: %s, error: %v", filePath, err)
-				// }
 			default:
 				log.Printf("Received message of type %d", msg.Type)
 			}
