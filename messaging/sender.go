@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"strconv"
 	"sync"
 
 	"github.com/waro163/wechat-bot-sdk/api"
@@ -135,7 +136,7 @@ func (s *Sender) SendImage(ctx context.Context, toUserID string, media *common.C
 }
 
 // SendFile sends a file message
-func (s *Sender) SendFile(ctx context.Context, toUserID, fileName string, media *common.CDNMedia) error {
+func (s *Sender) SendFile(ctx context.Context, toUserID, fileName string, media *common.CDNMedia, fileSize int64) error {
 	contextToken, err := s.getContextToken(ctx, toUserID)
 	if err != nil {
 		s.logger.Warn("Failed to get context token", common.Field{Key: "error", Value: err.Error()})
@@ -146,6 +147,7 @@ func (s *Sender) SendFile(ctx context.Context, toUserID, fileName string, media 
 	msgType := common.MessageTypeBot
 	msgState := common.MessageStateFinish
 	itemType := common.MessageItemTypeFile
+	fileSizeStr := strconv.FormatInt(fileSize, 10)
 
 	msg := &common.WeixinMessage{
 		ToUserID:     &toUserID,
@@ -159,6 +161,7 @@ func (s *Sender) SendFile(ctx context.Context, toUserID, fileName string, media 
 				FileItem: &common.FileItem{
 					Media:    media,
 					FileName: &fileName,
+					Len:      &fileSizeStr,
 				},
 			},
 		},

@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/md5"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -164,6 +165,7 @@ func (up *Uploader) UploadFile(ctx context.Context, fileData []byte, toUserID st
 	)
 
 	// Get upload URL from API
+	aesKeyHex := hex.EncodeToString(aesKey)
 	uploadUrlReq := &common.GetUploadUrlRequest{
 		FileKey:     fileKey,
 		MediaType:   mediaType,
@@ -172,7 +174,7 @@ func (up *Uploader) UploadFile(ctx context.Context, fileData []byte, toUserID st
 		RawFileMD5:  rawFileMD5,
 		FileSize:    fileSize,
 		NoNeedThumb: true,
-		AESKey:      hex.EncodeToString(aesKey),
+		AESKey:      aesKeyHex,
 	}
 
 	uploadUrlResp, err := up.httpClient.GetUploadUrl(ctx, uploadUrlReq)
@@ -189,8 +191,8 @@ func (up *Uploader) UploadFile(ctx context.Context, fileData []byte, toUserID st
 	return &common.UploadedFileInfo{
 		FileKey:                     fileKey,
 		DownloadEncryptedQueryParam: downloadParam,
-		AESKeyHex:                   hex.EncodeToString(aesKey),
-		FileSize:                    rawSize,
-		FileSizeCiphertext:          fileSize,
+		AesKeyBase64:                base64.StdEncoding.EncodeToString([]byte(aesKeyHex)),
+		RawFileSize:                 rawSize,
+		CiphertextFileSize:          fileSize,
 	}, nil
 }

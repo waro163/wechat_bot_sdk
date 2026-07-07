@@ -163,12 +163,12 @@ func (c *Client) SendImageMessage(ctx context.Context, toUserID string, image []
 	encryptType := common.EncryptTypePackaged
 	cdnMedia := &common.CDNMedia{
 		EncryptQueryParam: &media.DownloadEncryptedQueryParam,
-		AESKey:            &media.AESKeyHex,
+		AESKey:            &media.AesKeyBase64,
 		EncryptType:       &encryptType,
 	}
 
 	// Send message
-	return c.sender.SendImage(ctx, toUserID, cdnMedia, media.FileSizeCiphertext)
+	return c.sender.SendImage(ctx, toUserID, cdnMedia, media.CiphertextFileSize)
 }
 
 // SendFileMessage sends a file message
@@ -183,12 +183,12 @@ func (c *Client) SendFileMessage(ctx context.Context, toUserID, fileName string,
 	encryptType := common.EncryptTypePackaged
 	cdnMedia := &common.CDNMedia{
 		EncryptQueryParam: &media.DownloadEncryptedQueryParam,
-		AESKey:            &media.AESKeyHex,
+		AESKey:            &media.AesKeyBase64,
 		EncryptType:       &encryptType,
 	}
 
 	// Send message
-	return c.sender.SendFile(ctx, toUserID, fileName, cdnMedia)
+	return c.sender.SendFile(ctx, toUserID, fileName, cdnMedia, media.RawFileSize)
 }
 
 // SendVideoMessage sends a video message
@@ -203,12 +203,12 @@ func (c *Client) SendVideoMessage(ctx context.Context, toUserID string, video []
 	encryptType := common.EncryptTypePackaged
 	cdnMedia := &common.CDNMedia{
 		EncryptQueryParam: &media.DownloadEncryptedQueryParam,
-		AESKey:            &media.AESKeyHex,
+		AESKey:            &media.AesKeyBase64,
 		EncryptType:       &encryptType,
 	}
 
 	// Send message
-	return c.sender.SendVideo(ctx, toUserID, cdnMedia, media.FileSizeCiphertext)
+	return c.sender.SendVideo(ctx, toUserID, cdnMedia, media.CiphertextFileSize)
 }
 
 // DownloadMedia downloads and decrypts media from a message

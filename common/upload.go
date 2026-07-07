@@ -14,9 +14,9 @@ const (
 type UploadedFileInfo struct {
 	FileKey                     string
 	DownloadEncryptedQueryParam string // CDN x-encrypted-param header
-	AESKeyHex                   string // AES key in hex format
-	FileSize                    int64  // Plaintext file size
-	FileSizeCiphertext          int64  // Ciphertext file size (after AES-128-ECB)
+	AesKeyBase64                string // AES hex key in base64 format
+	RawFileSize                 int64  // Plaintext file size
+	CiphertextFileSize          int64  // Ciphertext file size (after AES-128-ECB)
 }
 
 // GetUploadUrlRequest represents the getUploadUrl API request
