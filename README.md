@@ -189,9 +189,7 @@ for {
             case common.MessageItemTypeImage:
                 // Download image
                 media := item.ImageItem.Media
-                data, err := client.DownloadMedia(ctx,
-                    *media.EncryptQueryParam,
-                    *media.AESKey)
+                data, err := client.DownloadMedia(ctx,media)
             case common.MessageItemTypeVideo:
                 // Handle video
             case common.MessageItemTypeVoice:
@@ -211,9 +209,7 @@ for {
 ```go
 // From received message
 media := imageItem.Media
-mediaData, err := client.DownloadMedia(ctx,
-    *media.EncryptQueryParam,
-    *media.AESKey)
+mediaData, err := client.DownloadMedia(ctx,media)
 
 // Save to file
 os.WriteFile("downloaded.jpg", mediaData, 0644)
