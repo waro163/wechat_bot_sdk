@@ -68,7 +68,7 @@ func main() {
 				spew.Dump(msg.ImageItem)
 				// download image and send back as a test
 				media := msg.ImageItem.Media
-				mediaData, err := client.DownloadMedia(ctx, *media.EncryptQueryParam, *media.AESKey)
+				mediaData, err := client.DownloadMedia(ctx, media)
 				if err != nil {
 					log.Printf("Failed to download media: %v", err)
 					continue
@@ -96,7 +96,7 @@ func main() {
 				log.Printf("Received video message\n")
 				spew.Dump(msg.VideoItem)
 				media := msg.VideoItem.Media
-				mediaData, err := client.DownloadMedia(ctx, *media.EncryptQueryParam, *media.AESKey)
+				mediaData, err := client.DownloadMedia(ctx, media)
 				if err != nil {
 					log.Printf("Failed to download media: %v", err)
 					continue
@@ -125,7 +125,7 @@ func main() {
 				spew.Dump(msg.VoiceItem)
 				log.Printf("voice content: %s\n", *msg.VoiceItem.Text)
 				media := msg.VoiceItem.Media
-				mediaData, err := client.DownloadMedia(ctx, *media.EncryptQueryParam, *media.AESKey)
+				mediaData, err := client.DownloadMedia(ctx, media)
 				if err != nil {
 					log.Printf("Failed to download media: %v", err)
 					continue
@@ -163,7 +163,7 @@ func main() {
 				spew.Dump(msg.FileItem)
 				media := msg.FileItem.Media
 				log.Printf("file name: %s\n", *msg.FileItem.FileName)
-				mediaData, err := client.DownloadMedia(ctx, *media.EncryptQueryParam, *media.AESKey)
+				mediaData, err := client.DownloadMedia(ctx, media)
 				if err != nil {
 					log.Printf("Failed to download media: %v", err)
 					continue
